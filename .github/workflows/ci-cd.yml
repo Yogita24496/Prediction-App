@@ -1,5 +1,4 @@
 name: CI/CD Pipeline
-
 on:
   push:
     branches: [ predictionapp ]
@@ -9,34 +8,25 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
-
+        node-version: [16.x, 18.x, 20.x]
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
       - name: Install dependencies
         run: |
           cd client
-          rm -rf node_modules package-lock.json
-          npm install
-
-      - name: Fix react-scripts permissions
-        run: |
-          cd client
-          chmod +x node_modules/.bin/react-scripts || true
-
+          npm ci
       - name: Run tests
         run: |
           cd client
-          CI=true npm test
+          CI=true npm test -- --watchAll=false
 
   build-and-deploy:
     needs: test
