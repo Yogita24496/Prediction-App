@@ -1,10 +1,10 @@
-name: Full Stack CI/CD
+name: Prediction App CI/CD
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, predictionapp]
   pull_request:
-    branches: [main, dev]
+    branches: [main, predictionapp]
 
 jobs:
   build-and-test:
