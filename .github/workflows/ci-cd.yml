@@ -21,9 +21,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
           
       - name: Install client dependencies
-        run: npm install
+        run: npm ci
         working-directory: ./client
         
       - name: Run client build
@@ -49,9 +51,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'server/package-lock.json'
           
       - name: Install server dependencies
-        run: npm install
+        run: npm ci
         working-directory: ./server
         
       - name: Run server tests
@@ -71,7 +75,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
           
       - name: Push to Docker Hub
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
           docker tag client-app ${{ secrets.DOCKER_USERNAME }}/weather-client:latest
           docker tag server-app ${{ secrets.DOCKER_USERNAME }}/weather-server:latest
