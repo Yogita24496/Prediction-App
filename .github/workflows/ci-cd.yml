@@ -81,3 +81,4 @@ jobs:
           docker tag server-app ${{ secrets.DOCKER_USERNAME }}/weather-server:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/weather-client:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/weather-server:latest
+          
