@@ -1,49 +1,55 @@
-name: Prediction App CI/CD
+name: Fullstack App CI/CD
 
 on:
   push:
-    branches: [main, predictionapp]
+    branches: [master, dev]
   pull_request:
-    branches: [main, predictionapp]
+    branches: [master, dev]
 
 jobs:
-  build-and-test:
+  test-and-build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: ['client', 'server']  # Runs for both frontend and backend
-    defaults:
-      run:
-        working-directory: ./${{ matrix.project }}
-
+    
     steps:
+      # Checkout the entire repository
       - name: Checkout code
         uses: actions/checkout@v3
-
+      
+      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-
-      - name: Verify lock file consistency
-        run: |
-          if ! npm ls --parseable &> /dev/null; then
-            echo "Lock file is inconsistent with package.json, regenerating..."
-            rm -rf node_modules
-            npm install
-            git config --global user.email "ci@example.com"
-            git config --global user.name "CI Bot"
-            git add package-lock.json
-            git commit -m "CI: Update package-lock.json" || echo "No lock file changes to commit"
-          fi
-
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit || npm install
-
-      - name: Run build
-        if: matrix.project == 'client'  # Only run build for frontend
-        run: npm run build
-
-      - name: Run tests
+      
+      # Cache node modules for faster builds
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            */node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      # Install and test backend (server)
+      - name: Install backend dependencies
+        working-directory: ./server
+        run: npm install
+        
+      - name: Run backend tests
+        working-directory: ./server
+        run: npm test
+      
+      # Install and test frontend (client)
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm install
+        
+      - name: Run frontend tests
+        working-directory: ./client
         run: npm test -- --watchAll=false
+      
+      - name: Build frontend
+        working-directory: ./client
+        run: npm run build
