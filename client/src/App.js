@@ -6,7 +6,7 @@ import SentimentForm from './components/SentimentForm';
 import ResultDisplay from './components/ResultDisplay';
 import HistoryList from './components/HistoryList';
 import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
-const axios = require('axios');
+import axios from 'axios';
 
 // Define the API URL based on environment
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
