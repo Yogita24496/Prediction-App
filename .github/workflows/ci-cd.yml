@@ -1,4 +1,4 @@
-name: Fullstack App CI/CD
+name: Full-Stack CI/CD
 
 on:
   push:
@@ -7,49 +7,73 @@ on:
     branches: [master, dev]
 
 jobs:
-  test-and-build:
+  client:
+    name: Build and Test Client
     runs-on: ubuntu-latest
-    
+    defaults:
+      run:
+        working-directory: ./client
     steps:
-      # Checkout the entire repository
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      # Set up Node.js environment
+        
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
-      # Cache node modules for faster builds
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            */node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      # Install and test backend (server)
-      - name: Install backend dependencies
-        working-directory: ./server
+          
+      - name: Install client dependencies
         run: npm install
+        working-directory: ./client
         
-      - name: Run backend tests
-        working-directory: ./server
-        run: npm test
-      
-      # Install and test frontend (client)
-      - name: Install frontend dependencies
-        working-directory: ./client
-        run: npm install
-        
-      - name: Run frontend tests
-        working-directory: ./client
-        run: npm test -- --watchAll=false
-      
-      - name: Build frontend
-        working-directory: ./client
+      - name: Run client build
         run: npm run build
+        working-directory: ./client
+        
+      - name: Run client tests
+        run: npm test -- --watchAll=false
+        working-directory: ./client
+
+  server:
+    name: Build and Test Server
+    needs: client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install server dependencies
+        run: npm install
+        working-directory: ./server
+        
+      - name: Run server tests
+        run: npm test
+        working-directory: ./server
+        
+      - name: Build Docker images
+        run: |
+          docker build -t client-app -f ./client/Dockerfile ./client
+          docker build -t server-app -f ./server/Dockerfile ./server
+        
+      - name: Login to Docker Hub
+        if: github.ref == 'refs/heads/master'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          
+      - name: Push to Docker Hub
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker tag client-app ${{ secrets.DOCKER_USERNAME }}/weather-client:latest
+          docker tag server-app ${{ secrets.DOCKER_USERNAME }}/weather-server:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/weather-client:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/weather-server:latest
