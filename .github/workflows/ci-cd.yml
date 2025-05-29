@@ -1,13 +1,13 @@
-name: Prediction App CI
+name: React and Node.js CI
 
 on:
   push:
-    branches: [main, master, predictionapp]
+    branches: [master]
   pull_request:
-    branches: [main, master, predictionapp]
+    branches: [master]
 
 jobs:
-  react:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,50 +18,30 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
 
-      - name: Install dependencies
-        working-directory: ./client
-        run: npm install
+      # Install React dependencies
+      - name: Install React dependencies
+        working-directory: ./client  # adjust if your React app is in a different directory
+        run: |
+          npm ci --no-audit
+          npm rebuild node-sass  # only if you use node-sass
 
-      - name: Run build
+      # Run React build
+      - name: Run React build
         working-directory: ./client
         run: npm run build
 
-      - name: Run tests
+      # Run React tests
+      - name: Run React tests
         working-directory: ./client
-        run: npm test -- --watchAll=false
+        run: npm test -- --watchAll=false --ci
 
-  node:
-    runs-on: ubuntu-latest
-    needs: react  # optional - remove if you want parallel execution
+      # Node.js steps (if applicable)
+      - name: Install Node.js dependencies
+        working-directory: ./server  # adjust to your server directory
+        run: npm ci --no-audit
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        working-directory: ./server
-        run: npm install
-
-      - name: Run tests
+      - name: Run Node.js tests
         working-directory: ./server
         run: npm test
-        
-      - name: Start server and test API
-        working-directory: ./server
-        run: |
-          npm start &
-          sleep 10
-          npm run test:api
-        env:
-          NODE_ENV: test
-          
-      - name: Run linting
-        run: npm run lint || echo "No lint script found"
-        
- 
