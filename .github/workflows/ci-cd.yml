@@ -2,9 +2,9 @@ name: Prediction App CI/CD
 
 on:
   push:
-    branches: [main, master, dev]
+    branches: [main, master, predictionapp]
   pull_request:
-    branches: [main, master, dev]
+    branches: [main, master, predictionapp]
 
 jobs:
   # Test and build client (React)
