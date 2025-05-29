@@ -65,4 +65,3 @@ jobs:
         run: npm run lint || echo "No lint script found"
         
  
->>>>>>> 814c9e11c687114292f82385a550314e697eee7a
