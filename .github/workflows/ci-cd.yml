@@ -51,15 +51,13 @@ jobs:
       - name: Run tests
         working-directory: ./server
         run: npm test
-<<<<<<< HEAD
-
+        
       - name: Start server and test API
         working-directory: ./server
         run: |
           npm start &
           sleep 10
           npm run test:api
-=======
         env:
           NODE_ENV: test
           
