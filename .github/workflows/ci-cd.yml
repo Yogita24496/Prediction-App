@@ -2,9 +2,9 @@ name: Prediction App CI
 
 on:
   push:
-    branches: [master]
+    branches: [main, master, predictionapp]
   pull_request:
-    branches: [master]
+    branches: [main, master, predictionapp]
 
 jobs:
   react:
@@ -51,6 +51,7 @@ jobs:
       - name: Run tests
         working-directory: ./server
         run: npm test
+<<<<<<< HEAD
 
       - name: Start server and test API
         working-directory: ./server
@@ -58,3 +59,12 @@ jobs:
           npm start &
           sleep 10
           npm run test:api
+=======
+        env:
+          NODE_ENV: test
+          
+      - name: Run linting
+        run: npm run lint || echo "No lint script found"
+        
+ 
+>>>>>>> 814c9e11c687114292f82385a550314e697eee7a
